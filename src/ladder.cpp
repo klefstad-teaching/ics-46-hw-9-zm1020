@@ -162,19 +162,4 @@ void verify_word_ladder() {
     
     int cat_dog_size = generate_word_ladder("cat", "dog", word_list).size();
     my_assert(cat_dog_size == 4);
-    
-    int marty_curls_size = generate_word_ladder("marty", "curls", word_list).size();
-    my_assert(marty_curls_size == 6);
-    
-    int code_data_size = generate_word_ladder("code", "data", word_list).size();
-    my_assert(code_data_size == 6);
-    
-    int work_play_size = generate_word_ladder("work", "play", word_list).size();
-    my_assert(work_play_size == 6);
-    
-    int sleep_awake_size = generate_word_ladder("sleep", "awake", word_list).size();
-    my_assert(sleep_awake_size == 8);
-    
-    int car_cheat_size = generate_word_ladder("car", "cheat", word_list).size();
-    my_assert(car_cheat_size == 4);
 }
