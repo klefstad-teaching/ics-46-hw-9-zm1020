@@ -10,43 +10,36 @@ bool edit_distance_within(const std::string& str1, const std::string& str2, int 
         return false;
     }
     
-    int len1 = str1.length();
-    int len2 = str2.length();
-    
-    if (len1 == len2) {
-        int differences = 0;
-        for (int i = 0; i < len1; i++) {
+    if (str1.length() == str2.length()) {
+        int diff = 0;
+        for (size_t i = 0; i < str1.length(); i++) {
             if (str1[i] != str2[i]) {
-                differences++;
-                if (differences > d) return false;
+                diff++;
+                if (diff > d) return false;
             }
         }
         return true;
     }
     
-    if (d == 1 && abs(len1 - len2) == 1) {
-        const string& shorter = (len1 < len2) ? str1 : str2;
-        const string& longer = (len1 < len2) ? str2 : str1;
+    if (d == 1) {
+        const string& shorter = (str1.length() < str2.length()) ? str1 : str2;
+        const string& longer = (str1.length() < str2.length()) ? str2 : str1;
         
-        int i = 0, j = 0;
-        int diff = 0;
+        size_t i = 0, j = 0;
+        bool skipped = false;
         
-        while (i < (int)shorter.length() && j < (int)longer.length()) {
+        while (i < shorter.length() && j < longer.length()) {
             if (shorter[i] == longer[j]) {
                 i++;
                 j++;
             } else {
-                diff++;
-                if (diff > 1) return false;
+                if (skipped) return false;
+                skipped = true;
                 j++;
             }
         }
         
-        if (j < (int)longer.length()) {
-            diff++;
-        }
-        
-        return diff <= d;
+        return (j - i) <= 1;
     }
     
     return false;
@@ -143,10 +136,11 @@ void print_word_ladder(const vector<string>& ladder) {
 
 void verify_word_ladder() {
     set<string> word_list;
-    word_list.insert("cat");
-    word_list.insert("cot");
-    word_list.insert("cog");
-    word_list.insert("dog");
-    
+    load_words(word_list, "words.txt");
     my_assert(generate_word_ladder("cat", "dog", word_list).size() == 4);
+    my_assert(generate_word_ladder("marty", "curls", word_list).size() == 6);
+    my_assert(generate_word_ladder("code", "data", word_list).size() == 6);
+    my_assert(generate_word_ladder("work", "play", word_list).size() == 6);
+    my_assert(generate_word_ladder("sleep", "awake", word_list).size() == 8);
+    my_assert(generate_word_ladder("car", "cheat", word_list).size() == 4);
 }
