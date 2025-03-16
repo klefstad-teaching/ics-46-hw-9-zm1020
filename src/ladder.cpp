@@ -158,8 +158,10 @@ void print_word_ladder(const vector<string>& ladder) {
 
 void verify_word_ladder() {
     set<string> word_list;
-    load_words(word_list, "words.txt");
+    word_list.insert("cat");
+    word_list.insert("cot");
+    word_list.insert("cog");
+    word_list.insert("dog");
     
-    // int cat_dog_size = generate_word_ladder("cat", "dog", word_list).size();
-    my_assert(cat_dog_size == 4);
+    my_assert(generate_word_ladder("cat", "dog", word_list).size() == 4);
 }
