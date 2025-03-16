@@ -140,18 +140,18 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
 
 void print_word_ladder(const vector<string>& ladder) {
     if (ladder.empty()) {
-        cout << "No word ladder exists." << endl;
+        cout << "No word ladder found." << endl;
         return;
     }
     
-    cout << "Found ladder with " << ladder.size() << " words: ";
+    cout << "Word ladder found: ";
     for (size_t i = 0; i < ladder.size(); i++) {
         cout << ladder[i];
         if (i < ladder.size() - 1) {
-            cout << " → ";
+            cout << " ";
         }
     }
-    cout << endl;
+    cout << " " << endl;
 }
 
 #define my_assert(e) {cout << #e << ((e) ? " passed": " failed") << endl;}
@@ -159,10 +159,22 @@ void print_word_ladder(const vector<string>& ladder) {
 void verify_word_ladder() {
     set<string> word_list;
     load_words(word_list, "words.txt");
-    my_assert(generate_word_ladder("cat", "dog", word_list).size() == 4);
-    my_assert(generate_word_ladder("marty", "curls", word_list).size() == 6);
-    my_assert(generate_word_ladder("code", "data", word_list).size() == 6);
-    my_assert(generate_word_ladder("work", "play", word_list).size() == 6);
-    my_assert(generate_word_ladder("sleep", "awake", word_list).size() == 8);
-    my_assert(generate_word_ladder("car", "cheat", word_list).size() == 4);
+    
+    int cat_dog_size = generate_word_ladder("cat", "dog", word_list).size();
+    my_assert(cat_dog_size == 4);
+    
+    int marty_curls_size = generate_word_ladder("marty", "curls", word_list).size();
+    my_assert(marty_curls_size == 6);
+    
+    int code_data_size = generate_word_ladder("code", "data", word_list).size();
+    my_assert(code_data_size == 6);
+    
+    int work_play_size = generate_word_ladder("work", "play", word_list).size();
+    my_assert(work_play_size == 6);
+    
+    int sleep_awake_size = generate_word_ladder("sleep", "awake", word_list).size();
+    my_assert(sleep_awake_size == 8);
+    
+    int car_cheat_size = generate_word_ladder("car", "cheat", word_list).size();
+    my_assert(car_cheat_size == 4);
 }
