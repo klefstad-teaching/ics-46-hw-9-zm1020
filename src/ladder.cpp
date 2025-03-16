@@ -91,7 +91,6 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         return {};
     }
     
-    // Direct check if start and end are adjacent
     if (is_adjacent(begin, end)) {
         return {begin, end};
     }
@@ -102,39 +101,39 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
     set<string> visited;
     visited.insert(begin);
     
-    // Add a safety counter to prevent infinite loops
-    int iterations = 0;
-    const int MAX_ITERATIONS = 1000000; // Adjust as needed
+    const int MAX_LADDER_SIZE = 10; 
+    int begin_len = begin.length();
+    int end_len = end.length();
     
-    while (!ladder_queue.empty() && iterations < MAX_ITERATIONS) {
-        iterations++;
+    while (!ladder_queue.empty()) {
         vector<string> current_ladder = ladder_queue.front();
         ladder_queue.pop();
         
-        string last_word = current_ladder.back();
+        if (current_ladder.size() > MAX_LADDER_SIZE) {
+            continue; 
+        }
         
-        for (const string& word : word_list) {
+        string last_word = current_ladder.back();
+        int last_len = last_word.length();
+        
+        for (const string& word : word_list) { 
             if (visited.find(word) != visited.end()) continue;
+            if (abs((int)word.length() - last_len) > 1) continue; 
+            if (!is_adjacent(last_word, word)) continue;
             
-            if (is_adjacent(last_word, word)) {
-                vector<string> new_ladder = current_ladder;
-                new_ladder.push_back(word);
-                
-                if (word == end) {
-                    return new_ladder;
-                }
-                
-                visited.insert(word);
-                ladder_queue.push(new_ladder);
+            vector<string> new_ladder = current_ladder;
+            new_ladder.push_back(word);
+            visited.insert(word);
+            
+            if (word == end) {
+                return new_ladder;
             }
+            
+            ladder_queue.push(new_ladder);
         }
     }
     
-    if (iterations >= MAX_ITERATIONS) {
-        error(begin, end, "Reached maximum iterations, possible infinite loop");
-    } else {
-        error(begin, end, "No word ladder exists");
-    }
+    error(begin, end, "No word ladder exists");
     return {};
 }
 
