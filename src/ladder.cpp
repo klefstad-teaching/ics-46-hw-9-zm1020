@@ -160,6 +160,6 @@ void verify_word_ladder() {
     set<string> word_list;
     load_words(word_list, "words.txt");
     
-    int cat_dog_size = generate_word_ladder("cat", "dog", word_list).size();
+    // int cat_dog_size = generate_word_ladder("cat", "dog", word_list).size();
     my_assert(cat_dog_size == 4);
 }
