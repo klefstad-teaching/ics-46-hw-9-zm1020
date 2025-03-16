@@ -31,7 +31,12 @@ bool edit_distance_within(const std::string& str1, const std::string& str2, int 
             }
         }
         
-        return true;
+        // If we reach the end with characters left in longer, count as a diff
+        if (j < longer.length()) {
+            diff++;
+        }
+        
+        return diff <= d;
     }
     
     if (len1 == len2) {
@@ -86,13 +91,23 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         return {};
     }
     
+    // Direct check if start and end are adjacent
+    if (is_adjacent(begin, end)) {
+        return {begin, end};
+    }
+    
     queue<vector<string>> ladder_queue;
     ladder_queue.push({begin});
     
     set<string> visited;
     visited.insert(begin);
     
-    while (!ladder_queue.empty()) {
+    // Add a safety counter to prevent infinite loops
+    int iterations = 0;
+    const int MAX_ITERATIONS = 1000000; // Adjust as needed
+    
+    while (!ladder_queue.empty() && iterations < MAX_ITERATIONS) {
+        iterations++;
         vector<string> current_ladder = ladder_queue.front();
         ladder_queue.pop();
         
@@ -115,7 +130,11 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         }
     }
     
-    error(begin, end, "No word ladder exists");
+    if (iterations >= MAX_ITERATIONS) {
+        error(begin, end, "Reached maximum iterations, possible infinite loop");
+    } else {
+        error(begin, end, "No word ladder exists");
+    }
     return {};
 }
 

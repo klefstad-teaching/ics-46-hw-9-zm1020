@@ -23,24 +23,39 @@ vector<int> dijkstra_shortest_path(const Graph& G, int source, vector<int>& prev
     distance[source] = 0;
     pq.push(Node(source, 0));
     
-    while (!pq.empty()) {
+    // Safety counter to prevent infinite loops
+    int iterations = 0;
+    const int MAX_ITERATIONS = 1000000; // Adjust based on expected graph size
+    
+    while (!pq.empty() && iterations < MAX_ITERATIONS) {
+        iterations++;
         int u = pq.top().vertex;
         pq.pop();
         
+        // Skip if already processed (better path already found)
         if (visited[u]) continue;
         
         visited[u] = true;
         
+        // Process all outgoing edges
         for (const Edge& edge : G[u]) {
             int v = edge.dst;
             int weight = edge.weight;
             
-            if (!visited[v] && distance[u] != INF && distance[u] + weight < distance[v]) {
+            // Skip invalid edges or already finalized vertices
+            if (weight < 0 || visited[v]) continue;
+            
+            // Relaxation step
+            if (distance[u] != INF && distance[u] + weight < distance[v]) {
                 distance[v] = distance[u] + weight;
                 previous[v] = u;
                 pq.push(Node(v, distance[v]));
             }
         }
+    }
+    
+    if (iterations >= MAX_ITERATIONS) {
+        cerr << "Warning: Maximum iterations reached in Dijkstra's algorithm. Possible infinite loop." << endl;
     }
     
     return distance;
