@@ -1,3 +1,4 @@
+#include "ladder.h"
 bool is_adjacent(const string& word1, const string& word2) {
     int len1 = word1.length();
     int len2 = word2.length();
