@@ -90,39 +90,26 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
     visited.insert(begin);
 
     while (!ladder_queue.empty()) {
-        int level_size = ladder_queue.size();
-        set<string> local_visited;
+        vector<string> current_ladder = ladder_queue.front();
+        ladder_queue.pop();
 
-        for (int i = 0; i < level_size; i++) {
-            vector<string> current_ladder = ladder_queue.front();
-            ladder_queue.pop();
-
-            string last_word = current_ladder.back();
-
-            for (size_t j = 0; j < last_word.size(); j++) {
-                string temp = last_word;
-
-                for (char c = 'a'; c <= 'z'; c++) {
-                    if (c == last_word[j]) continue;
-
-                    temp[j] = c;
-                    
-                    if (temp == end) {
-                        current_ladder.push_back(temp);
-                        return current_ladder;
-                    }
-
-                    if (word_list.count(temp) && !visited.count(temp)) {
-                        vector<string> new_ladder = current_ladder;
-                        new_ladder.push_back(temp);
-                        ladder_queue.push(new_ladder);
-                        local_visited.insert(temp);
-                    }
+        string last_word = current_ladder.back();
+        
+        for (const string& word : word_list) {
+            if (visited.find(word) != visited.end()) continue;
+            
+            if (is_adjacent(last_word, word)) {
+                vector<string> new_ladder = current_ladder;
+                new_ladder.push_back(word);
+                
+                if (word == end) {
+                    return new_ladder;
                 }
+                
+                visited.insert(word);
+                ladder_queue.push(new_ladder);
             }
         }
-
-        visited.insert(local_visited.begin(), local_visited.end());
     }
 
     error(begin, end, "No word ladder exists");
