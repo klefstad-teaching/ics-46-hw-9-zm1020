@@ -14,42 +14,62 @@ bool edit_distance_within(const std::string& str1, const std::string& str2, int 
     }
     
     if (len1 == len2) {
-        int differences = 0;
+        int diff = 0;
         for (int i = 0; i < len1; i++) {
             if (str1[i] != str2[i]) {
-                differences++;
-                if (differences > d) return false;
+                diff++;
+                if (diff > d) return false;
             }
         }
         return true;
     }
     
-    if (d == 1 && abs(len1 - len2) == 1) {
+    if (abs(len1 - len2) == 1 && d == 1) {
         const string& shorter = (len1 < len2) ? str1 : str2;
         const string& longer = (len1 < len2) ? str2 : str1;
         
-        int i = 0, j = 0;
-        bool skipped = false;
-        
-        while (i < shorter.length() && j < longer.length()) {
-            if (shorter[i] == longer[j]) {
-                i++;
-                j++;
-            } else {
-                if (skipped) return false;
-                skipped = true;
-                j++;
+        for (int i = 0; i <= (int)longer.length() - (int)shorter.length(); i++) {
+            bool match = true;
+            for (int j = 0, k = 0; j < (int)shorter.length(); j++, k++) {
+                if (k == i) k++;
+                if (shorter[j] != longer[k]) {
+                    match = false;
+                    break;
+                }
             }
+            if (match) return true;
         }
-        
-        return (j == longer.length() || !skipped);
     }
     
     return false;
 }
 
 bool is_adjacent(const string& word1, const string& word2) {
-    return edit_distance_within(word1, word2, 1);
+    int len1 = word1.length();
+    int len2 = word2.length();
+    
+    if (len1 != len2) {
+        if (abs(len1 - len2) != 1) return false;
+        
+        const string& shorter = (len1 < len2) ? word1 : word2;
+        const string& longer = (len1 < len2) ? word2 : word1;
+        
+        for (int i = 0; i < (int)longer.length(); i++) {
+            string temp = longer;
+            temp.erase(i, 1);
+            if (temp == shorter) return true;
+        }
+        return false;
+    }
+    
+    int diff = 0;
+    for (int i = 0; i < len1; i++) {
+        if (word1[i] != word2[i]) {
+            diff++;
+            if (diff > 1) return false;
+        }
+    }
+    return diff == 1;
 }
 
 void load_words(set<string>& word_list, const string& file_name) {
@@ -92,32 +112,16 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
     set<string> visited;
     visited.insert(begin);
     
-    // For performance, filter the dictionary first by length
-    set<string> filtered_dict;
-    int begin_len = begin.length();
-    int end_len = end.length();
-    
-    for (const auto& word : word_list) {
-        int len = word.length();
-        if (len == begin_len || len == begin_len + 1 || len == begin_len - 1 ||
-            len == end_len || len == end_len + 1 || len == end_len - 1) {
-            filtered_dict.insert(word);
-        }
-    }
-    
     while (!ladder_queue.empty()) {
         vector<string> current_ladder = ladder_queue.front();
         ladder_queue.pop();
         
         string last_word = current_ladder.back();
-        int last_len = last_word.length();
         
-        // Only check words with similar length
-        for (const string& word : filtered_dict) {
-            if (visited.find(word) != visited.end()) continue;
-            
-            int word_len = word.length();
-            if (abs(word_len - last_len) > 1) continue;
+        for (const string& word : word_list) {
+            if (visited.find(word) != visited.end()) {
+                continue;
+            }
             
             if (is_adjacent(last_word, word)) {
                 vector<string> new_ladder = current_ladder;
