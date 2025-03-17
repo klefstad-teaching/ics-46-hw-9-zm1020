@@ -69,9 +69,6 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
     unordered_set<string> visited{begin};
     ladder_queue.push({begin});
     
-    size_t min_len = min(begin.length(), end.length());
-    size_t max_len = max(begin.length(), end.length());
-    
     while (!ladder_queue.empty()) {
         vector<string> ladder = ladder_queue.front();
         ladder_queue.pop();
@@ -82,11 +79,8 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
             return ladder;
         }
         
-        size_t last_len = last.length();
         for (const string& word : word_list) {
-            size_t len = word.length();
-            if (len < min_len - 1 || len > max_len + 1 || visited.count(word)) continue;
-            if (abs(static_cast<int>(len - last_len)) <= 1 && is_adjacent(last, word)) {
+            if (visited.count(word) == 0 && is_adjacent(last, word)) {
                 vector<string> new_ladder = ladder;
                 new_ladder.push_back(word);
                 visited.insert(word);
