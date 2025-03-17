@@ -66,63 +66,54 @@ bool is_adjacent(const string& word1, const string& word2) {
 }
 
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, 
-                                  const set<string>& word_list) {
+                                    const set<string>& word_list) {
     string begin = begin_word, end = end_word;
     for (char& c : begin) c = tolower(c);
     for (char& c : end) c = tolower(c);
     
-    if (begin == end) {
-        return {};
-    }
-    
-    if (word_list.count(end) == 0) {
-        return {};
-    }
-    
-    // Create filtered word list by length
-    set<string> filtered_words;
-    size_t begin_len = begin.length();
-    
-    for (const auto& word : word_list) {
-        size_t len = word.length();
-        if (len == begin_len || len == begin_len + 1 || len == begin_len - 1) {
-            filtered_words.insert(word);
-        }
-    }
-    
-    // BFS implementation
+    if (begin == end) return {};
+
+    if (!word_list.count(end)) return {};  
+
     queue<vector<string>> ladder_queue;
     unordered_set<string> visited;
-    
-    visited.insert(begin);
     ladder_queue.push({begin});
+    visited.insert(begin);
     
     while (!ladder_queue.empty()) {
-        vector<string> current_ladder = ladder_queue.front();
-        ladder_queue.pop();
+        int level_size = ladder_queue.size();
+        unordered_set<string> local_visited;
         
-        string last_word = current_ladder.back();
-        
-        // Key optimization: If we're just one step away from the goal, check directly
-        if (is_adjacent(last_word, end)) {
-            vector<string> new_ladder = current_ladder;
-            new_ladder.push_back(end);
-            return new_ladder;
-        }
-        
-        for (const string& word : filtered_words) {
-            if (visited.count(word) > 0) continue;
-            
-            if (is_adjacent(last_word, word)) {
-                vector<string> new_ladder = current_ladder;
-                new_ladder.push_back(word);
-                
-                visited.insert(word);
-                ladder_queue.push(new_ladder);
+        for (int i = 0; i < level_size; i++) {
+            vector<string> current_ladder = ladder_queue.front();
+            ladder_queue.pop();
+            string last_word = current_ladder.back();
+
+            for (size_t j = 0; j < last_word.size(); j++) {
+                string temp = last_word;
+
+                for (char c = 'a'; c <= 'z'; c++) {
+                    if (c == last_word[j]) continue;
+                    
+                    temp[j] = c;
+                    if (temp == end) {
+                        current_ladder.push_back(temp);
+                        return current_ladder;
+                    }
+
+                    if (word_list.count(temp) && !visited.count(temp)) {
+                        vector<string> new_ladder = current_ladder;
+                        new_ladder.push_back(temp);
+                        ladder_queue.push(new_ladder);
+                        local_visited.insert(temp);
+                    }
+                }
             }
         }
+        
+        visited.insert(local_visited.begin(), local_visited.end());
     }
-    
+
     return {};
 }
 
