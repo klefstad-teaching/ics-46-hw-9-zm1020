@@ -1,6 +1,5 @@
 #include "ladder.h"
 #include <unordered_set>
-#include <chrono>
 
 void error(string word1, string word2, string msg) {
     cerr << "Error: " << msg << " (" << word1 << " to " << word2 << ")" << endl;
@@ -122,15 +121,3 @@ void verify_word_ladder() {
     my_assert(generate_word_ladder("car", "cheat", word_list).size() == 4);
 }
 
-void test_verify_word_ladder_time() {
-    auto start = std::chrono::high_resolution_clock::now();
-    verify_word_ladder();
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    cout << "verify_word_ladder took " << duration.count() << " milliseconds" << endl;
-}
-
-int main() {
-    test_verify_word_ladder_time();
-    return 0;
-}
