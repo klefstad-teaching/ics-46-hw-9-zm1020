@@ -6,42 +6,43 @@ void error(string word1, string word2, string msg) {
 }
 
 bool edit_distance_within(const std::string& str1, const std::string& str2, int d) {
-    if (abs(static_cast<int>(str1.length()) - static_cast<int>(str2.length())) > d) {
+    int len1 = str1.length();
+    int len2 = str2.length();
+
+    if (abs(len1 - len2) > d) {
         return false;
     }
-    
-    if (str1.length() == str2.length()) {
+
+    if (len1 == len2) {
         int diff = 0;
-        for (size_t i = 0; i < str1.length(); i++) {
+        for (size_t i = 0; i < len1; i++) {
             if (str1[i] != str2[i]) {
-                diff++;
-                if (diff > d) return false;
+                if (++diff > d) return false;
             }
         }
         return true;
     }
-    
+
     if (d == 1) {
-        const string& shorter = (str1.length() < str2.length()) ? str1 : str2;
-        const string& longer = (str1.length() < str2.length()) ? str2 : str1;
-        
+        const string& shorter = (len1 < len2) ? str1 : str2;
+        const string& longer = (len1 < len2) ? str2 : str1;
+
         size_t i = 0, j = 0;
         bool skipped = false;
-        
+
         while (i < shorter.length() && j < longer.length()) {
-            if (shorter[i] == longer[j]) {
-                i++;
-                j++;
-            } else {
+            if (shorter[i] != longer[j]) {
                 if (skipped) return false;
                 skipped = true;
+                j++;  
+            } else {
+                i++;
                 j++;
             }
         }
-        
-        return (j - i) <= 1;
+        return true;
     }
-    
+
     return false;
 }
 
