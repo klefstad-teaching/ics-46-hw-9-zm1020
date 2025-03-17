@@ -4,6 +4,20 @@ void error(string word1, string word2, string msg) {
     cerr << "Error: " << msg << " (" << word1 << " to " << word2 << ")" << endl;
 }
 
+void load_words(set<string>& word_list, const string& file_name) {
+    ifstream fin(file_name);
+    if (!fin) {
+        cerr << "Error: Could not open " << file_name << endl;
+        exit(1);
+    }
+    string word;
+    while (fin >> word) {
+        for (char& c : word) c = tolower(c);
+        word_list.insert(word);
+    }
+    fin.close();
+}
+
 bool edit_distance_within(const string& str1, const string& str2, int d) {
     if (str1 == str2) {
         return true;
