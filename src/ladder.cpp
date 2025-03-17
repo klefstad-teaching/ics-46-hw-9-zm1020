@@ -120,7 +120,3 @@ void test_verify_word_ladder_time() {
     cout << "verify_word_ladder took " << duration.count() << " milliseconds" << endl;
 }
 
-int main() {
-    test_verify_word_ladder_time();
-    return 0;
-}
