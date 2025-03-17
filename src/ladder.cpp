@@ -8,41 +8,43 @@ void error(string word1, string word2, string msg) {
 bool edit_distance_within(const std::string& str1, const std::string& str2, int d) {
     int len1 = str1.length();
     int len2 = str2.length();
-
+    
     if (abs(len1 - len2) > d) {
         return false;
     }
-
+    
     if (len1 == len2) {
-        int diff = 0;
-        for (size_t i = 0; i < len1; i++) {
+        int differences = 0;
+        for (int i = 0; i < len1; i++) {
             if (str1[i] != str2[i]) {
-                if (++diff > d) return false;
+                differences++;
+                if (differences > d) return false;
             }
         }
         return true;
     }
-
-    if (d == 1) {
+    
+    if (d == 1 && abs(len1 - len2) == 1) {
         const string& shorter = (len1 < len2) ? str1 : str2;
         const string& longer = (len1 < len2) ? str2 : str1;
-
-        size_t i = 0, j = 0;
+        
+        int i = 0, j = 0;
         bool skipped = false;
-
+        
         while (i < shorter.length() && j < longer.length()) {
-            if (shorter[i] != longer[j]) {
+            if (shorter[i] == longer[j]) {
+                i++;
+                j++;
+            } else {
                 if (skipped) return false;
                 skipped = true;
-                j++;  
-            } else {
-                i++;
                 j++;
             }
         }
-        return true;
+        
+        return (j == longer.length() || !skipped);
     }
-
+    
     return false;
 }
 
@@ -69,10 +71,11 @@ void load_words(set<string>& word_list, const string& file_name) {
 }
 
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list) {
-    string begin = begin_word, end = end_word;
+    string begin = begin_word;
+    string end = end_word;
     for (char& c : begin) c = tolower(c);
     for (char& c : end) c = tolower(c);
-
+    
     if (begin == end) {
         error(begin, end, "Start and end words are the same");
         return {};
@@ -82,21 +85,39 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         error(begin, end, "End word not found in dictionary");
         return {};
     }
-
+    
     queue<vector<string>> ladder_queue;
     ladder_queue.push({begin});
-
+    
     set<string> visited;
     visited.insert(begin);
-
+    
+    // For performance, filter the dictionary first by length
+    set<string> filtered_dict;
+    int begin_len = begin.length();
+    int end_len = end.length();
+    
+    for (const auto& word : word_list) {
+        int len = word.length();
+        if (len == begin_len || len == begin_len + 1 || len == begin_len - 1 ||
+            len == end_len || len == end_len + 1 || len == end_len - 1) {
+            filtered_dict.insert(word);
+        }
+    }
+    
     while (!ladder_queue.empty()) {
         vector<string> current_ladder = ladder_queue.front();
         ladder_queue.pop();
-
-        string last_word = current_ladder.back();
         
-        for (const string& word : word_list) {
+        string last_word = current_ladder.back();
+        int last_len = last_word.length();
+        
+        // Only check words with similar length
+        for (const string& word : filtered_dict) {
             if (visited.find(word) != visited.end()) continue;
+            
+            int word_len = word.length();
+            if (abs(word_len - last_len) > 1) continue;
             
             if (is_adjacent(last_word, word)) {
                 vector<string> new_ladder = current_ladder;
@@ -111,7 +132,7 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
             }
         }
     }
-
+    
     error(begin, end, "No word ladder exists");
     return {};
 }
