@@ -5,35 +5,42 @@ void error(string word1, string word2, string msg) {
     cerr << "Error: " << msg << " (" << word1 << " to " << word2 << ")" << endl;
 }
 
-bool is_adjacent(const string& word1, const string& word2) {
-    int len1 = word1.length(), len2 = word2.length();
-    if (abs(len1 - len2) > 1) return false;
+bool edit_distance_within(const string& str1, const string& str2, int d) {
+    size_t len1 = str1.length(), len2 = str2.length();
+    if (abs(static_cast<int>(len1 - len2)) > d) return false;
     
     if (len1 == len2) {
         int diff = 0;
         for (size_t i = 0; i < len1; i++) {
-            if (word1[i] != word2[i]) diff++;
-            if (diff > 1) return false;
+            if (str1[i] != str2[i]) diff++;
+            if (diff > d) return false;
         }
-        return diff == 1;
+        return true;
     }
     
-    const string& shorter = len1 < len2 ? word1 : word2;
-    const string& longer = len1 < len2 ? word2 : word1;
-    size_t i = 0, j = 0;
-    bool skipped = false;
-    
-    while (i < shorter.length() && j < longer.length()) {
-        if (shorter[i] != longer[j]) {
-            if (skipped) return false;
-            skipped = true;
-            j++;
-        } else {
-            i++;
-            j++;
+    if (d == 1) {
+        const string& shorter = len1 < len2 ? str1 : str2;
+        const string& longer = len1 < len2 ? str2 : str1;
+        size_t i = 0, j = 0;
+        bool skipped = false;
+        
+        while (i < shorter.length() && j < longer.length()) {
+            if (shorter[i] != longer[j]) {
+                if (skipped) return false;
+                skipped = true;
+                j++;
+            } else {
+                i++;
+                j++;
+            }
         }
+        return (j - i) <= 1;
     }
-    return true;
+    return false;
+}
+
+bool is_adjacent(const string& word1, const string& word2) {
+    return edit_distance_within(word1, word2, 1);
 }
 
 void load_words(set<string>& word_list, const string& file_name) {
@@ -96,7 +103,7 @@ void print_word_ladder(const vector<string>& ladder) {
 
 void verify_word_ladder() {
     set<string> word_list;
-    load_words(word_list, "src/words.txt");
+    load_words(word_list, "words.txt");
     my_assert(generate_word_ladder("cat", "dog", word_list).size() == 4);
     my_assert(generate_word_ladder("marty", "curls", word_list).size() == 6);
     my_assert(generate_word_ladder("code", "data", word_list).size() == 6);
@@ -104,3 +111,4 @@ void verify_word_ladder() {
     my_assert(generate_word_ladder("sleep", "awake", word_list).size() == 8);
     my_assert(generate_word_ladder("car", "cheat", word_list).size() == 4);
 }
+
