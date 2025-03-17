@@ -29,32 +29,57 @@ bool edit_distance_within(const string& str1, const string& str2, int d) {
         return false;
     }
     
-    vector<vector<int>> dp(len1 + 1, vector<int>(len2 + 1));
-    
-    for (size_t i = 0; i <= len1; i++) {
-        dp[i][0] = i;
-    }
-    
-    for (size_t j = 0; j <= len2; j++) {
-        dp[0][j] = j;
-    }
-    
-    for (size_t i = 1; i <= len1; i++) {
-        for (size_t j = 1; j <= len2; j++) {
-            if (str1[i - 1] == str2[j - 1]) {
-                dp[i][j] = dp[i - 1][j - 1];
-            } else {
-                dp[i][j] = 1 + min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]});
+    if (d == 1) {
+        if (len1 == len2) {
+            int diffs = 0;
+            for (size_t i = 0; i < len1; i++) {
+                if (str1[i] != str2[i]) diffs++;
+                if (diffs > 1) return false;
             }
+            return diffs <= 1;
+        } else {
+            const string& shorter = len1 < len2 ? str1 : str2;
+            const string& longer = len1 < len2 ? str2 : str1;
+            
+            size_t i = 0, j = 0;
+            bool skipped = false;
+            
+            while (i < shorter.length() && j < longer.length()) {
+                if (shorter[i] != longer[j]) {
+                    if (skipped) return false;
+                    skipped = true;
+                    j++;
+                } else {
+                    i++; j++;
+                }
+            }
+            return (j - i) <= 1;
         }
     }
     
-    return dp[len1][len2] <= d;
+    // Only use full matrix for d > 1
+    vector<int> prev(len2 + 1), curr(len2 + 1);
+    
+    for (size_t j = 0; j <= len2; j++) prev[j] = j;
+    
+    for (size_t i = 1; i <= len1; i++) {
+        curr[0] = i;
+        for (size_t j = 1; j <= len2; j++) {
+            if (str1[i-1] == str2[j-1]) {
+                curr[j] = prev[j-1];
+            } else {
+                curr[j] = 1 + min({prev[j], curr[j-1], prev[j-1]});
+            }
+        }
+        prev = curr;
+    }
+    
+    return prev[len2] <= d;
 }
 
 bool is_adjacent(const string& word1, const string& word2) {
     if (word1 == word2) {
-        return false;
+        return true;
     }
     
     size_t len1 = word1.length(), len2 = word2.length();
@@ -69,9 +94,7 @@ bool is_adjacent(const string& word1, const string& word2) {
         for (size_t i = 0; i < len1; i++) {
             if (word1[i] != word2[i]) {
                 diff_count++;
-                if (diff_count > 1) {
-                    return false;
-                }
+                if (diff_count > 1) return false;
             }
         }
         return diff_count == 1;
@@ -80,16 +103,20 @@ bool is_adjacent(const string& word1, const string& word2) {
     const string& shorter = (len1 < len2) ? word1 : word2;
     const string& longer = (len1 < len2) ? word2 : word1;
     
-    for (size_t i = 0; i < longer.length(); i++) {
-        string temp = longer;
-        temp.erase(i, 1);
-        
-        if (temp == shorter) {
-            return true;
+    size_t i = 0, j = 0;
+    bool skipped = false;
+    
+    while (i < shorter.length() && j < longer.length()) {
+        if (shorter[i] != longer[j]) {
+            if (skipped) return false;
+            skipped = true;
+            j++;
+        } else {
+            i++; j++;
         }
     }
     
-    return false;
+    return (j - i) <= 1;
 }
 
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, 
@@ -106,6 +133,17 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         return {};
     }
     
+    // Filter the dictionary to include only relevant words
+    set<string> filtered_words;
+    size_t begin_len = begin.length();
+    
+    for (const string& word : word_list) {
+        size_t len = word.length();
+        if (abs(static_cast<int>(len - begin_len)) <= 1) {
+            filtered_words.insert(word);
+        }
+    }
+    
     queue<vector<string>> ladder_queue;
     set<string> visited;
     
@@ -118,7 +156,7 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         
         string last_word = current_ladder.back();
         
-        for (const string& word : word_list) {
+        for (const string& word : filtered_words) {
             if (visited.count(word) > 0) {
                 continue;
             }
@@ -151,6 +189,7 @@ void print_word_ladder(const vector<string>& ladder) {
     }
     cout << endl;
 }
+
 
 #define my_assert(e) {cout << #e << ((e) ? " passed": " failed") << endl;}
 
