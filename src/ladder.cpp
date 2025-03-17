@@ -1,5 +1,4 @@
-#include "ladder.h"
-#include <chrono>
+#include 'ladder.h'
 
 void error(string word1, string word2, string msg) {
     cerr << "Error: " << msg << " (" << word1 << " to " << word2 << ")" << endl;
@@ -7,35 +6,43 @@ void error(string word1, string word2, string msg) {
 
 bool edit_distance_within(const string& str1, const string& str2, int d) {
     size_t len1 = str1.length(), len2 = str2.length();
-    if (abs(static_cast<int>(len1 - len2)) > d) return false;
     
-    if (len1 == len2) {
-        int diff = 0;
-        for (size_t i = 0; i < len1; i++) {
-            if (str1[i] != str2[i]) diff++;
-            if (diff > d) return false;
-        }
-        return true;
+    if (abs(static_cast<int>(len1 - len2)) > d) {
+        return false;
     }
     
     if (d == 1) {
-        const string& shorter = len1 < len2 ? str1 : str2;
-        const string& longer = len1 < len2 ? str2 : str1;
+        if (len1 == len2) {
+            int diffs = 0;
+            for (size_t i = 0; i < len1; i++) {
+                if (str1[i] != str2[i]) {
+                    diffs++;
+                    if (diffs > 1) return false;
+                }
+            }
+            return diffs == 1;
+        }
+        
+        const string& shorter = (len1 < len2) ? str1 : str2;
+        const string& longer = (len1 < len2) ? str2 : str1;
+        
         size_t i = 0, j = 0;
-        bool skipped = false;
+        bool found_diff = false;
         
         while (i < shorter.length() && j < longer.length()) {
             if (shorter[i] != longer[j]) {
-                if (skipped) return false;
-                skipped = true;
+                if (found_diff) return false;
+                found_diff = true;
                 j++;
             } else {
                 i++;
                 j++;
             }
         }
-        return (j - i) <= 1;
+        
+        return (j == longer.length() || j + 1 == longer.length());
     }
+    
     return false;
 }
 
@@ -63,28 +70,43 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
     for (char& c : begin) c = tolower(c);
     for (char& c : end) c = tolower(c);
     
-    if (begin == end) return {};
-    if (word_list.count(end) == 0) return {};
+    if (begin == end) {
+        return {begin};
+    }
+    
+    if (word_list.count(end) == 0) {
+        return {};
+    }
     
     queue<vector<string>> ladder_queue;
-    set<string> visited{begin};
+    set<string> visited;
+    
+    visited.insert(begin);
     ladder_queue.push({begin});
     
     while (!ladder_queue.empty()) {
-        vector<string> ladder = ladder_queue.front();
+        vector<string> current_ladder = ladder_queue.front();
         ladder_queue.pop();
-        string last = ladder.back();
+        
+        string last_word = current_ladder.back();
         
         for (const string& word : word_list) {
-            if (visited.count(word) == 0 && is_adjacent(last, word)) {
-                vector<string> new_ladder = ladder;
-                new_ladder.push_back(word);
-                if (word == end) return new_ladder;
-                visited.insert(word);
-                ladder_queue.push(new_ladder);
+            if (visited.count(word) > 0 || !is_adjacent(last_word, word)) {
+                continue;
             }
+            
+            vector<string> new_ladder = current_ladder;
+            new_ladder.push_back(word);
+            
+            if (word == end) {
+                return new_ladder;
+            }
+            
+            visited.insert(word);
+            ladder_queue.push(new_ladder);
         }
     }
+    
     return {};
 }
 
@@ -95,8 +117,12 @@ void print_word_ladder(const vector<string>& ladder) {
     }
     cout << "Word ladder found: ";
     for (size_t i = 0; i < ladder.size(); i++) {
-        cout << ladder[i] << (i < ladder.size() - 1 ? " " : "\n");
+        cout << ladder[i];
+        if (i < ladder.size() - 1) {
+            cout << " ";
+        }
     }
+    cout << endl;
 }
 
 #define my_assert(e) {cout << #e << ((e) ? " passed": " failed") << endl;}
@@ -110,13 +136,5 @@ void verify_word_ladder() {
     my_assert(generate_word_ladder("work", "play", word_list).size() == 6);
     my_assert(generate_word_ladder("sleep", "awake", word_list).size() == 8);
     my_assert(generate_word_ladder("car", "cheat", word_list).size() == 4);
-}
-
-void test_verify_word_ladder_time() {
-    auto start = std::chrono::high_resolution_clock::now();
-    verify_word_ladder();
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    cout << "verify_word_ladder took " << duration.count() << " milliseconds" << endl;
 }
 
